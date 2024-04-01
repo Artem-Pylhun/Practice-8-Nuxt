@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useLazyAsyncData} from "#app";
+import { useLazyAsyncData } from "#app";
 
 const columns = [{
   key: 'title',
@@ -25,23 +25,23 @@ const columns = [{
   key: 'category',
   label: 'Category',
   sortable: true
-},
-  {
-    key: 'thumbnail',
-    label: 'Thumbnail'
-  }]
+},{
+  key: 'thumbnail',
+  label: 'Thumbnail'
+}]
+
 const sort = ref({ column: 'title', direction: 'asc' as const })
 const selectedColumns = ref([...columns])
 const columnsTable = computed(() => columns.filter((column) => selectedColumns.value.includes(column)))
-const {data, pending} = await useLazyAsyncData<any>(
-    'products', () => $fetch('https://dummyjson.com/products'))
+const { data, pending } = await useLazyAsyncData<any>('products', () => $fetch('https://dummyjson.com/products'))
 
 let products = data.value.products;
-//selectable product, current page number and count of elements on page
+
+// Selectable product, current page number, and count of elements on page
 const selected = ref([])
 const page = ref(1)
 const pageCount = 4
-// filter and pagination
+// Filter and pagination
 const q = ref('')
 const sortedRows = computed(() => {
   const sortedProducts = [...products]
@@ -60,26 +60,30 @@ const sortedRows = computed(() => {
   return sortedProducts
 })
 
-// Compute filtered and paginated rows based on the search query, sorted data, and pagination settings
-const rows = computed(() => {
-  let filteredProducts = [...sortedRows.value]
+// Compute filtered rows based on the search query
+const filteredRows = computed(() => {
+  if (!q.value) {
 
-  if (q.value) {
-    filteredProducts = filteredProducts.filter(product => {
-      return Object.values(product).some(value => {
-        return String(value).toLowerCase().includes(q.value.toLowerCase())
-      })
-    })
+    return sortedRows.value;
   }
+  page.value = 1;
+  return sortedRows.value.filter(product => {
+    return Object.values(product).some(value => {
+      return String(value).toLowerCase().includes(q.value.toLowerCase())
+    })
+  })
+})
 
+// Compute paginated rows based on the filtered data
+const rows = computed(() => {
   const startIndex = (page.value - 1) * pageCount
   const endIndex = startIndex + pageCount
 
-  return filteredProducts.slice(startIndex, endIndex)
+  return filteredRows.value.slice(startIndex, endIndex)
 })
 
-
-
+// Compute total count for pagination based on the filtered data length
+const total = computed(() => filteredRows.value.length)
 </script>
 
 <template>
@@ -104,7 +108,7 @@ const rows = computed(() => {
           sort-mode="manual"
           class="w-full "
           :ui="{ td: { base: 'max-w-[0] max-h-[0] truncate' } }"
-          >
+  >
     <!--displaying color that depends on rating value-->>
     <template class="" #rating-data="{ row }">
       <span :style="{ color: row.rating > 4.5 ? 'green' : 'red' }">{{ row.rating }}</span>
@@ -115,7 +119,7 @@ const rows = computed(() => {
     </template>
   </UTable>
   <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
-    <UPagination v-model="page" :page-count="pageCount" :total="products.length" />
+    <UPagination v-model="page" :page-count="pageCount" :total="total" />
   </div>
 </template>
 
