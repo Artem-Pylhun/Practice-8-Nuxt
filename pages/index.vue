@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import ListOfStudents from "~/pages/ListOfStudents.vue";
 </script>
 
 <template>
-  <h1>Select Students or Charg page</h1>
+  <ListOfStudents/>
 </template>
 
 <style scoped>
