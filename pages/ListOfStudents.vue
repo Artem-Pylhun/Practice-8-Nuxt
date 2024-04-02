@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useLazyAsyncData } from "#app";
-
+useHead({
+  title: 'Student List'
+})
 const columns = [{
   key: 'title',
   label: 'Title',
