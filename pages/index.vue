@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ListOfStudents from "~/pages/ListOfStudents.vue";
+import BlogPostsUi from "~/pages/BlogPostsUi.vue";
 </script>
 
 <template>
-  <ListOfStudents/>
+  <BlogPostsUi/>
 </template>
 
 <style scoped>
