@@ -58,7 +58,7 @@ const paginated_rows = computed(() => {
 
 <template>
   <UTable :columns="columns" :rows="paginated_rows" :total="rows.length" />
-  <div>
+  <div class="d-flex mt-5">
     <UPagination v-model="page" :page-count="page_count" :total="total" />
   </div>
 </template>

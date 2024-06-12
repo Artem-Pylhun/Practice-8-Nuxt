@@ -1,12 +1,10 @@
 <script setup lang="ts">
 
 const links = [{
-  label: 'ListOfStudents',
-  to: '/ListOfStudents'
-}, {
-  label: 'Chart',
-  to: '/Chart'
-}]
+  label: 'Posts',
+  to: '/'
+}
+]
 </script>
 
 <template>

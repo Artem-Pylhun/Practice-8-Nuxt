@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BlogPostsUi from "~/pages/BlogPostsUi.vue";
+import BlogPostsUi from "~/pages/posts/BlogPostsUi.vue";
 </script>
 
 <template>
