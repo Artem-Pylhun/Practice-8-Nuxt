@@ -3,7 +3,11 @@
 const links = [{
   label: 'Posts',
   to: '/'
-}
+},
+  {
+    label: 'Categories',
+    to: '/categories'
+  }
 ]
 </script>
 

@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import {API_BASE_URL} from "~/utils/constants";
 
-interface Post {
-  id: number;
-  user: User;
-  category: Category;
-  title: string;
-  published_at: string;
-  content_raw: string;
-}
 interface User {
   name: string;
   email: string;
@@ -17,6 +9,20 @@ interface User {
 interface Category {
   title: string;
   description: string;
+}
+
+interface Post {
+  id: number;
+  user: User;
+  category: Category;
+  title: string;
+  excerpt: string;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+  content_raw: string;
+  is_published: boolean;
+  slug: string;
 }
 const route = useRoute();
 const postId = ref<number | null>(null);
@@ -30,7 +36,11 @@ const getPost = async (id: number) => {
     console.error('Error fetching post:', error);
   }
 };
-
+const items = [{
+  label: 'Content',
+  icon: 'i-heroicons-information-circle',
+  slot: 'content'
+}]
 onMounted(() => {
   const id = parseInt(route.params.id as string, 10);
   if (!isNaN(id)) {
@@ -43,53 +53,58 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex justify-center mx-5 gap-5">
-
-
-  <UCard class="col-auto">
-    <template #header>
-      <h3 class="text-center"><strong>Detailed info about post</strong> </h3>
-    </template>
-    <template class="row flex ">
-      <div class="col-auto flex flex-col gap-5">
-        <p><strong>Id</strong>: {{post?.id}}</p>
-        <p><strong>Title:</strong> {{post?.title}}</p>
-        <p><strong>Category:</strong> {{post?.category?.title}}</p>
-        <p><strong>Published at:</strong> {{post?.published_at}}</p>
-        <p><strong>Content:</strong> {{post?.content_raw}}</p>
-      </div>
-    </template>
-
-  </UCard>
-    <div class="row flex-col flex justify-between">
-
-
-  <UCard class="col-auto">
-    <template #header>
-        <h3 class="text-center"><strong>User Info</strong></h3>
-    </template>
-      <template class="row flex justify-center">
-        <div class="col-auto">
-          <p><strong>Name:</strong> {{post?.user?.name}}</p>
-          <p><strong>Email:</strong> {{post?.user?.email}}</p>
-        </div>
-      </template>
-  </UCard>
-  <UCard class="col-auto">
-    <template #header>
-      <h4 class="text-center"><strong>Category Info</strong></h4>
-    </template>
-    <template class="row flex justify-center">
-      <div class="col-auto">
-        <p><strong>Title:</strong> {{post?.category?.title}}</p>
-        <p><strong>Description:</strong> {{post?.category?.description}}</p>
-      </div>
-    </template>
-  </UCard>
+  <div>
+    <div class="p-5">
+      <nuxt-link class="mt-20 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" to="/posts">Back</nuxt-link>
     </div>
+    <div class="flex flex-row justify-evenly my-2">
+      <div class="w-8/12 text-center">
+        <UCard class="h-full">
+          <template #header>
+            <p>Post ID: {{ postId }}</p>
+          </template>
+          <ul>
+            <li class="border-b-2 my-3 pb-3">Title: {{post?.title}}</li>
+            <li class="border-b-2 my-3 pb-3">Is published: {{post?.is_published ? 'True' : 'False'}}</li>
+            <li class="border-b-2 my-3 pb-3">Published at: {{post?.published_at}}</li>
+            <li class="border-b-2 my-3 pb-3">Created at: {{post?.created_at}}</li>
+            <li class="border-b-2 my-3 pb-3">Excerpt: {{post?.excerpt}}</li>
+            <li class="border-b-2 my-3 pb-3">Slug: {{post?.slug}}</li>
+            <li>Updated at: {{post?.updated_at}}</li>
+          </ul>
+          <template #footer>
+            <UAccordion :items="items">
+              <template #content="{ description }">
+                <p class="text-justify">{{post?.content_raw}}</p>
+              </template>
+            </UAccordion>
+          </template>
+        </UCard>
+      </div>
+      <div class="w-3/12 text-center flex flex-col gap-3 justify-between">
+        <UCard >
+          <template #header>
+            <p>Category</p>
+          </template>
+          <ul>
+            <li class="border-b-2 mb-3 pb-3">Title: {{post?.category?.title}}</li>
+            <li class=" my-3">Description: {{post?.category?.description ? post?.category?.description : 'Empty'}}</li>
+          </ul>
+        </UCard>
+        <UCard>
+          <template #header>
+            <p>User</p>
+          </template>
+          <ul>
+            <li class="border-b-2 mb-3 pb-3">Name: {{post?.user?.name}}</li>
+            <li class=" my-3">Email: {{post?.user?.email}}</li>
+          </ul>
+        </UCard>
+      </div>
+    </div>
+
   </div>
 </template>
-
 <style scoped>
 
 </style>
