@@ -20,9 +20,11 @@ const categories = ref<Category[]>([]);
 
 const getCategories = async () => {
   try {
-    const response = await $fetch<Category[]>(API_BASE_URL+`/api/blog/categories`);
+    const response = await $fetch<Category[]>(API_BASE_URL+`/api/blog/categories/get`);
     categories.value = response;
-    console.log(categories.value);
+    if (categories.value.length > 0) {
+      state.category_id = categories.value[0].id.toString();
+    }
   } catch (error) {
     console.error('Error fetching categories:', error);
   }
@@ -32,7 +34,7 @@ getCategories();
 const posts = ref<Post[]>([]);
 const getPosts = async () => {
   try {
-    const response = await $fetch<Post[]>(`http://127.0.0.1:8000/api/blog/posts`);
+    const response = await $fetch<Post[]>(`http://127.0.0.1:8000/api/blog/posts/get`);
     posts.value = response;
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -75,7 +77,7 @@ const state = reactive<Partial<Schema>>({
   content_raw: undefined,
   category_id: undefined,
   is_published: false,
-  excerpt: undefined
+  excerpt: ""
 });
 
 async function onSubmit() {
@@ -117,23 +119,24 @@ async function onSubmit() {
         <UFormGroup label="Заголовок" name="title">
           <UInput v-model="state.title" />
         </UFormGroup>
-        <UFormGroup label="Текст статті" name="content">
-          <UInput v-model="state.content_raw" />
+        <UFormGroup label="Текст статті" name="content_raw">
+          <UTextarea v-model="state.content_raw" />
         </UFormGroup>
 
-        <UFormGroup label="Категорія" name="category" >
+        <UFormGroup label="Категорія" name="category_id" >
           <USelect v-model="state.category_id" :options="categoryOptions" />
         </UFormGroup>
 
         <UFormGroup label="Псевдонім" name="slug" >
           <UInput v-model="state.slug" type="text"  />
         </UFormGroup>
-        <UFormGroup label="Короткий текст" name="small" >
+        <UFormGroup label="Короткий текст" name="excerpt" >
           <UTextarea v-model="state.excerpt" type="text"  />
         </UFormGroup>
-        <UFormGroup label="Published" name="published" >
+        <UFormGroup label="Published" name="is_published" >
           <UCheckbox v-model="state.is_published"/>
         </UFormGroup>
+
 
 
         <UButton type="submit" class="flex m-auto mt-5">

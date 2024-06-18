@@ -20,8 +20,11 @@ const categories = ref<Category[]>([]);
 
 const getCategories = async () => {
   try {
-    const response = await $fetch<Category[]>(`http://127.0.0.1:8000/api/blog/categories`);
+    const response = await $fetch<Category[]>(`http://127.0.0.1:8000/api/blog/categories/get`);
     categories.value = response;
+    if (categories.value.length > 0) {
+      state.parent_id = categories.value[0].id.toString();
+    }
     console.log(categories.value);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -57,7 +60,7 @@ const state = reactive<Partial<Schema>>({
   parent_id: undefined
 });
 
-async function onSubmit (event: Event) {
+async function onSubmit () {
   try {
     const result = schema.parse(state);
     console.log(result);

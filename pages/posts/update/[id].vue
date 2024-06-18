@@ -14,7 +14,7 @@
           <UInput v-model="state.slug" />
         </UFormGroup>
 
-        <UFormGroup label="Content" name="content">
+        <UFormGroup label="Content" name="content_raw">
           <UTextarea v-model="state.content_raw" />
         </UFormGroup>
 
@@ -62,7 +62,7 @@ const categories = ref<Category[]>([]);
 
 const getCategories = async () => {
   try {
-    const response = await $fetch<Category[]>(`http://127.0.0.1:8000/api/blog/categories`);
+    const response = await $fetch<Category[]>(`http://127.0.0.1:8000/api/blog/categories/get`);
     categories.value = response;
     console.log(categories.value);
   } catch (error) {
@@ -84,6 +84,10 @@ const getPost = async (id: number) => {
     state.slug = post.value.slug;
     state.is_published = !!post.value.is_published; // Convert to boolean
     state.excerpt = post.value.excerpt;
+    if(post.value.excerpt === null)
+    {
+      state.excerpt = ''
+    }
     state.content_raw = post.value.content_raw;
   } catch (error) {
     console.error('Error fetching post:', error);
@@ -103,7 +107,7 @@ onMounted(() => {
 const posts = ref<Post[]>([]);
 const getPosts = async () => {
   try {
-    const response = await $fetch<Post[]>(`http://127.0.0.1:8000/api/blog/posts`);
+    const response = await $fetch<Post[]>(`http://127.0.0.1:8000/api/blog/posts/get`);
     posts.value = response;
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -136,6 +140,7 @@ const schema = z.object({
   }, 'Category ID must be a valid integer and exist in categories'),
   is_published: z.boolean().optional(),
   excerpt: z.string().optional()
+
 });
 
 type Schema = z.infer<typeof schema>;
@@ -145,15 +150,14 @@ const state = reactive<Partial<Schema>>({
   slug: undefined,
   content_raw: undefined,
   category_id: undefined,
-  is_published: false, // Initialize as boolean
-  excerpt: undefined
+  is_published: false,
+  excerpt: ""
 });
 
 async function onSubmit() {
   try {
     const result = schema.parse(state);
     console.log(result);
-
     // Convert category_id to number before sending to server
     const dataToSend = {
       ...result,

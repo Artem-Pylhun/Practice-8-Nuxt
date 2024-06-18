@@ -1,93 +1,85 @@
 <script setup lang="ts">
-import {API_BASE_URL} from "~/utils/constants";
+import { API_BASE_URL } from "~/utils/constants";
 import axios from "axios";
-
-const columns = [
-  {
-    key: 'id',
-    label: '#'
-  },
-  {
-    key: 'title',
-    label: 'Назва',
-  },
-  {
-    key: 'parent_category_title',
-    label: 'Батьківська категорія'
-  },
-  {
-    key: 'actions',
-    label: 'Дії'
-  }
-]
-
-
-const page = ref(1);
-const page_count = 5;
-
+import { ref, computed, watch } from 'vue';
 
 interface Category {
   id: number;
   title: string;
-  parent_category: Category;
+  parent_category: Category | null;
   parent_id: number;
 }
 
-const categories = ref<Category[]>([]);
+const columns = [
+  { key: 'id', label: '#' },
+  { key: 'title', label: 'Назва' },
+  { key: 'parent_category_title', label: 'Батьківська категорія' },
+  { key: 'actions', label: 'Дії' }
+];
 
-const getCategories = async () => {
+const page = ref(1);
+const totalPages = ref(1);
+const categories = ref<Category[]>([]);
+const totalCategories = ref(0);
+const getCategories = async (page = 1) => {
   try {
-    const response = await $fetch<Category[]>(API_BASE_URL + '/api/blog/categories');
-    categories.value = response;
+    const response = await axios.get(`${API_BASE_URL}/api/blog/categories?page=${page}`);
+    categories.value = response.data.data;
+    totalPages.value = response.data.last_page;
+    totalCategories.value = response.data.total;
   } catch (error) {
-    console.error('Error fetching posts:', error);
+    console.error('Error fetching categories:', error);
   }
 };
+
+watch(page, () => {
+  getCategories(page.value);
+});
+
 getCategories();
 
 const rows = computed(() => {
-  return categories.value.map((category) => ({
+  return categories.value.map(category => ({
     id: category.id,
     title: category.title,
-    parent_category_title: category.parent_category?.id ?? 'N/A'
+    parent_category_title: category.parent_category?.title ?? 'N/A'
   }));
 });
 
-const total = computed(() => rows.value.length);
-const paginated_rows = computed(() => {
-      return rows.value.slice((page.value - 1) * page_count, (page.value) * page_count);
+const items = (category: Category) => [
+  [
+    {
+      label: 'Редагувати',
+      icon: 'i-heroicons-pencil-square-20-solid',
+      click: () => window.location.href = (`/categories/update/${category.id}`)
+    },
+    {
+      label: 'Деталі',
+      icon: 'i-heroicons-information-circle-20-solid',
+      click: () => window.location.href = (`/categories/${category.id}`)
     }
-);
-
-const items = (category:Category) => [
-  [{
-    label: 'Редагувати',
-    icon: 'i-heroicons-pencil-square-20-solid',
-    click: () => window.location.href = (`/categories/update/${category?.id}`)
-  }, {
-    label: 'Деталі',
-    icon: 'i-heroicons-information-circle-20-solid',
-    click: () => window.location.href = (`/categories/${category?.id}`)
-  }], [{
-    label: 'Видалити',
-    icon: 'i-heroicons-trash-20-solid',
-    click: () => {
-      if (confirm(`Ви впевнені, що хочете видалити категорію '${category.title}'?`))
-      {
-        axios.delete(`http://127.0.0.1:8000/api/blog/categories/${category.id}`)
-            .then(res => {
-              console.log(res);
-              alert('Категорію видалено!');
-              categories.value = categories.value.filter(c => c.id !== category.id);
-            })
-            .catch(error => {
-              console.error(error);
-              alert('Не вдалось видалити категорію!');
-            });
+  ],
+  [
+    {
+      label: 'Видалити',
+      icon: 'i-heroicons-trash-20-solid',
+      click: () => {
+        if (confirm(`Ви впевнені, що хочете видалити категорію '${category.title}'?`)) {
+          axios.delete(`${API_BASE_URL}/api/blog/categories/${category.id}`)
+              .then(res => {
+                console.log(res);
+                alert('Категорію видалено!');
+                getCategories(page.value);
+              })
+              .catch(error => {
+                console.error(error);
+                alert('Не вдалось видалити категорію!');
+              });
+        }
       }
     }
-  }]
-]
+  ]
+];
 </script>
 
 <template>
@@ -100,8 +92,7 @@ const items = (category:Category) => [
       </NuxtLink>
     </div>
     <div>
-
-      <UTable class="mt-3" :columns="columns" :rows="paginated_rows" :total="rows.length">
+      <UTable class="mt-3" :columns="columns" :rows="rows" :total="totalCategories">
         <template #actions-data="{ row }">
           <UDropdown :items="items(row)">
             <UButton color="gray" variant="ghost" icon="i-heroicons-ellipsis-horizontal-20-solid" />
@@ -109,7 +100,7 @@ const items = (category:Category) => [
         </template>
       </UTable>
       <div class="d-flex mt-5">
-        <UPagination v-model="page" :page-count="page_count" :total="total" />
+        <UPagination v-model="page" :page-count="5" :total="totalCategories" />
       </div>
     </div>
   </div>

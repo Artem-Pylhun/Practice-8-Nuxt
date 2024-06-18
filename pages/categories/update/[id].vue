@@ -76,7 +76,7 @@ onMounted(() => {
 const categories = ref<Category[]>([]);
 const getCategories = async () => {
   try {
-    const response = await $fetch<Category[]>(`http://127.0.0.1:8000/api/blog/categories`);
+    const response = await $fetch<Category[]>(`http://127.0.0.1:8000/api/blog/categories/get`);
     categories.value = response;
     console.log(categories.value);
   } catch (error) {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {API_BASE_URL} from "~/utils/constants";
-import {navigateTo} from "#app";
 import axios from "axios";
+import {ref, watch} from "vue";
 
 const columns = [
   {
@@ -61,8 +61,6 @@ const items = (post:Post) => [
 ]
 
 
-const page = ref(1);
-const page_count = 5;
 
 interface User {
   name: string;
@@ -82,14 +80,22 @@ interface Post {
 
 const posts = ref<Post[]>([]);
 
-const getPosts = async () => {
+const page = ref(1);
+const totalPages = ref(1);
+const totalPosts = ref(0);
+const getPosts = async (page = 1) => {
   try {
-    const response = await $fetch<Post[]>(API_BASE_URL + '/api/blog/posts');
-    posts.value = response;
+    const response = await axios.get(`${API_BASE_URL}/api/blog/posts?page=${page}`);
+    posts.value = response.data.data;
+    totalPages.value = response.data.last_page;
+    totalPosts.value = response.data.total;
   } catch (error) {
     console.error('Error fetching posts:', error);
   }
 };
+watch(page, () => {
+  getPosts(page.value);
+});
 getPosts();
 
 const rows = computed(() => {
@@ -102,11 +108,6 @@ const rows = computed(() => {
   }));
 });
 
-const total = computed(() => rows.value.length);
-const paginated_rows = computed(() => {
-      return rows.value.slice((page.value - 1) * page_count, (page.value) * page_count);
-    }
-);
 
 
 </script>
@@ -122,7 +123,7 @@ const paginated_rows = computed(() => {
     </div>
     <div>
 
-      <UTable class="mt-3" :columns="columns" :rows="paginated_rows" :total="rows.length">
+      <UTable class="mt-3" :columns="columns" :rows="rows" :total="rows.length">
 
         <template #actions-data="{ row }">
           <UDropdown :items="items(row)">
@@ -131,7 +132,7 @@ const paginated_rows = computed(() => {
         </template>
       </UTable>
       <div class="d-flex mt-5">
-        <UPagination v-model="page" :page-count="page_count" :total="total" />
+        <UPagination v-model="page" :page-count="5" :total="totalPosts" />
       </div>
     </div>
   </div>

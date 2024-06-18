@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+import dayjs from "dayjs";
+
 interface Category {
   id: number;
   title: string;
@@ -18,7 +20,11 @@ const category = ref<Category | null>(null);
 const getCategory = async (id: number) => {
   try {
     const response = await $fetch<Category>(`http://127.0.0.1:8000/api/blog/categories/${id}`);
-    category.value = response;
+    category.value = {
+      ...response,
+      updated_at: dayjs(response.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+      deleted_at: response.deleted_at ? dayjs(response.deleted_at).format('YYYY-MM-DD HH:mm:ss') : ''
+    };
   } catch (error) {
     console.error('Error fetching category:', error);
   }
